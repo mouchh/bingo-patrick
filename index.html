@@ -4,6 +4,13 @@
   <title>tornado WebSocket example</title>
   <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
   <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+  <style media="screen" type="text/css">
+    #clickandcolor {
+      width: 30%;
+      margin-left: auto;
+      margin-right: auto;
+    }  
+  </style
 </head>
 <body>
   <div class="container">
@@ -11,77 +18,22 @@
     <hr>
       WebSocket status : <span id="message"></span>
     <hr>
-    <h3>The following table shows values by using WebSocket</h3>
 
-      <div class="row">
-        <div class="span4">
-          <table class="table table-striped table-bordered table-condensed">
-            <tr>
-              <th>No.</th><th>id</th><th>value</th>
-            </tr>
-            <tr id="row1">
-              <td> 1 </td><td> id 1 </td><td id="1"> 0 </td>
-            </tr>
-            <tr id="row2">
-              <td> 2 </td><td> id 2 </td><td id="2"> 0 </td>
-            </tr>
-            <tr id="row3">
-              <td> 3 </td><td> id 3 </td><td id="3"> 0 </td>
-            </tr>
-          </table>
-        </div>
-        <div class="span4">
-          <table class="table table-striped table-bordered table-condensed">
-            <tr>
-              <th>No.</th><th>id</th><th>value</th>
-            </tr>
-            <tr id="row4">
-              <td> 4 </td><td> id 4 </td><td id="4"> 0 </td>
-            </tr>
-            <tr id="row5">
-              <td> 5 </td><td> id 5 </td><td id="5"> 0 </td>
-            </tr>
-            <tr id="row6">
-              <td> 6 </td><td> id 6 </td><td id="6"> 0 </td>
-            </tr>
-          </table>
-        </div>
-        <div class="span4">
-          <table class="table table-striped table-bordered table-condensed">
-            <tr>
-              <th>No.</th><th>id</th><th>value</th>
-            </tr>
-            <tr id="row7">
-              <td> 7 </td><td> id 7 </td><td id="7"> 0 </td>
-            </tr>
-            <tr id="row8">
-              <td> 8 </td><td> id 8 </td><td id="8"> 0 </td>
-            </tr>
-            <tr id="row9">
-              <td> 9 </td><td> id 9 </td><td id="9"> 0 </td>
-            </tr>
-          </table>
-        </div>
-      </div>
-
-    <hr>
-    <h3>REST API examples</h3>
-    <ol>
-      <li>Set the "id 1" value to 100
-        <ul><li>curl "http://10.0.0.2:8888/api?id=1&amp;value=100"</li></ul>
-      </li>
-      <li>Set the "id 1" value to 300 ( The row No 1 will change to yellow )
-        <ul><li>curl "http://10.0.0.2:8888/api?id=1&amp;value=300"</li></ul>
-      </li>
-      <li>Set The "id 1" value to 600 ( The row No 1 will change to red )
-        <ul><li>curl "http://10.0.0.2:8888/api?id=1&amp;value=600"</li></ul>
-      </li>
-    </ol>
-    <ul>
-      <li>value 201 - 500 : change to yellow</li>
-      <li>value 501 - : change to red</li>
-    </ul>
+  <h3>The following table is colored by several users through websockets!</h3>
+  <div id="clickandcolor">
+    <table class="table table-striped table-bordered table-condensed">
+    <tr id="row1">
+      <td id="col1">bla</td><td id="col2">bla</td><td id="col3">bla</td>
+    </tr>
+    <tr id="row2">
+      <td id="col1">bla</td><td id="col2">bla</td><td id="col3">bla</td>
+    </tr>
+    <tr id="row3">
+      <td id="col1">bla</td><td id="col2">bla</td><td id="col3">bla</td>
+    </tr>
+    </table>
   </div>
+
   <script>
     var ws = new WebSocket('ws://10.0.0.2:8888/ws');
     var $message = $('#message');
@@ -97,20 +49,8 @@
       $message.text('recieved message');
 
       var json = JSON.parse(ev.data);
-      $('#' + json.id).hide();
-      $('#' + json.id).fadeIn("slow");
-      $('#' + json.id).text(json.value);
-
-      var $rowid = $('#row' + json.id);
-      if(json.value > 500){
-        $rowid.attr("class", "error");
-      }
-      else if(json.value > 200){
-        $rowid.attr("class", "warning");
-      }
-      else{
-        $rowid.attr("class", "");
-      }
+      console.log(json);
+      $('#' + json.tr + ' > #' + json.td).css('background-color', json.color)
     };
     ws.onclose = function(ev){
       $message.attr("class", 'label label-important');
@@ -121,6 +61,12 @@
       $message.text('error occurred');
     };
 
+  $(document).ready(function() {
+      $('#clickandcolor td').click(function() {
+        clicked = {tr: $(this).parent().attr('id'), td: $(this).attr('id')};
+        ws.send(JSON.stringify(clicked));
+        })
+  });
   </script>
 </body>
 </html>

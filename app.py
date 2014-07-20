@@ -1,5 +1,5 @@
 from tornado import websocket, web, ioloop
-import json
+import json, random
 
 cl = []
 
@@ -12,34 +12,26 @@ class SocketHandler(websocket.WebSocketHandler):
     def open(self):
         if self not in cl:
             cl.append(self)
+            self.pseudo = 'Player ' + str(len(cl))
+            self.color = '#' + ''.join([random.choice('0123456789ABCDEF') for i in range(6)])
 
     def on_close(self):
         if self in cl:
             cl.remove(self)
 
-class ApiHandler(web.RequestHandler):
+    def on_message(self, message):
+        decoded = json.loads(message)
+        decoded['pseudo'] = self.pseudo
+        decoded['color'] = self.color
+        encoded = json.dumps(decoded)
 
-    @web.asynchronous
-    def get(self, *args):
-        self.finish()
-        id = self.get_argument("id")
-        value = self.get_argument("value")
-        data = {"id": id, "value" : value}
-        data = json.dumps(data)
         for c in cl:
-            c.write_message(data)
-
-    @web.asynchronous
-    def post(self):
-        pass
+            c.write_message(encoded)
 
 app = web.Application([
     (r'/', IndexHandler),
     (r'/ws', SocketHandler),
-    (r'/api', ApiHandler),
-    (r'/(favicon.ico)', web.StaticFileHandler, {'path': '../'}),
-    (r'/(rest_api_example.png)', web.StaticFileHandler, {'path': './'}),
-])
+], debug=True)
 
 if __name__ == '__main__':
     app.listen(8888)
